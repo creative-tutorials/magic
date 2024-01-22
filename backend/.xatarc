@@ -1,0 +1,6 @@
+{
+  "databaseURL": "https://Timi-s-workspace-eouder.us-east-1.xata.sh/db/magic",
+  "codegen": {
+    "output": "database/xata.ts"
+  }
+}
