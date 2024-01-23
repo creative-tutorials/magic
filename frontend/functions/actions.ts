@@ -5,7 +5,7 @@ import { toast } from "sonner";
 async function fetchApps(
   setIsFetching: Dispatch<SetStateAction<boolean>>,
   setData: Dispatch<SetStateAction<never[]>>,
-  url: "https://api.magic.link" | "http://localhost:8080"
+  url: "https://xbrid.vercel.app" | "http://localhost:8080"
 ) {
   setIsFetching(true);
   ("use server");
@@ -46,7 +46,7 @@ async function createRequest(
     url: string;
     isPending: boolean;
   },
-  url: "https://api.magic.link" | "http://localhost:8080",
+  url: "https://xbrid.vercel.app" | "http://localhost:8080",
   user?: { username: string; emailAddresses: { emailAddress: string }[] } | any
 ) {
   if (!isSignedIn) return;
