@@ -1,5 +1,5 @@
 export function useAPIURL() {
-  if (process.env.NODE_ENV === "production") return "https://api.magic.link";
+  if (process.env.NODE_ENV === "production") return "https://xbrid.vercel.app";
 
   return "http://localhost:8080";
 }
