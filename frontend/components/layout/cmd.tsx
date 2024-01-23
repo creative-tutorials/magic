@@ -22,7 +22,7 @@ export function CmdBox({ isOpen, openSetter }: CommandState) {
       />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Suggestions">
+        <CommandGroup heading="Quick links">
           <Link href="/">
             <CommandItem>
               <Home className="mr-2 h-4 w-4" />

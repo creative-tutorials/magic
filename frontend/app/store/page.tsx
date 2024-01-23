@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
-
+import { useAPIURL } from "@/hooks/get-url";
 import Image from "next/image";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
+import { fetchApps } from "@/functions/actions";
 import { Button } from "@/components/ui/button";
+import { Loader2Icon } from "lucide-react";
 import {
   Card,
   CardDescription,
@@ -26,34 +28,18 @@ type typeApps = {
 export default function Page() {
   const [count, setCount] = useState(0);
   const [data, setData] = useState([]);
+  const [isFetching, setIsFetching] = useState(true);
+  const url = useAPIURL();
 
   useEffect(() => {
     setCount((prev) => prev + 1);
 
-    count === 1 && fetchApps();
+    count === 1 && fetchApps(setIsFetching, setData, url);
 
     return () => {
       setCount(0);
     };
   }, [count]);
-
-  async function fetchApps() {
-    axios
-      .get("http://localhost:8080/api/apps", {
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.NEXT_PUBLIC_API_KEY,
-        },
-      })
-      .then(async (data) => {
-        console.log(data.data);
-        setData(data.data);
-      })
-      .catch(async (err) => {
-        console.error(err.response);
-        setData([]);
-      });
-  }
 
   return (
     <>
@@ -108,61 +94,69 @@ export default function Page() {
               needs.
             </p>
           </hgroup>
-          <div
-            id="cards"
-            className="md:grid md:grid-cols-3 lg:grid lg:grid-cols-3 gap-2 flex flex-col"
-          >
-            {data.map((item: typeApps, index: number) => (
-              <>
-                <Card className="w-full h-full flex flex-col bg-zinc-900 border border-zinc-800">
-                  <CardHeader className="flex flex-col gap-3">
-                    <div
-                      id="CardImage"
-                      className="w-full h-full rounded-lg overflow-hidden object-cover border-2 border-transparent transition-all hover:border-red-300"
-                    >
-                      <Link href={item.url} target="_blank">
-                        <Image
-                          src={item.appicon}
-                          width={500}
-                          height={500}
-                          alt={item.appname}
-                          className="w-full h-full rounded-lg  overflow-hidden object-cover transition-all hover:scale-110"
-                        />
-                      </Link>
-                    </div>
-                    <CardTitle className="flex items-center justify-between">
-                      <hgroup>
-                        <p className="text-white md:font-bold lg:font-bold font-medium">
-                          {item.appname}
-                        </p>
-                      </hgroup>
-                      <Link href={item.url} target="_blank">
-                        <Button className="bg-zinc-800 hover:bg-zinc-700">
-                          Open
-                        </Button>
-                      </Link>
-                    </CardTitle>
-                    <CardDescription className="text-neutral-400">
-                      {item.description}
-                    </CardDescription>
-                  </CardHeader>
+          {isFetching ? (
+            <div className="flex items-center justify-center">
+              <Loader2Icon className="w-24 h-24 animate-spin text-red-500 " />
+            </div>
+          ) : (
+            <>
+              <div
+                id="cards"
+                className="md:grid md:grid-cols-3 lg:grid lg:grid-cols-3 gap-2 flex flex-col"
+              >
+                {data.map((item: typeApps, index: number) => (
+                  <>
+                    <Card className="w-full h-full flex flex-col bg-zinc-900 border border-zinc-800">
+                      <CardHeader className="flex flex-col gap-3">
+                        <div
+                          id="CardImage"
+                          className="w-full h-full rounded-lg overflow-hidden object-cover border-2 border-transparent transition-all hover:border-red-300"
+                        >
+                          <Link href={item.url} target="_blank">
+                            <Image
+                              src={item.appicon}
+                              width={500}
+                              height={500}
+                              alt={item.appname}
+                              className="w-full h-full rounded-lg  overflow-hidden object-cover transition-all hover:scale-110"
+                            />
+                          </Link>
+                        </div>
+                        <CardTitle className="flex items-center justify-between">
+                          <hgroup>
+                            <p className="text-white md:font-bold lg:font-bold font-medium">
+                              {item.appname}
+                            </p>
+                          </hgroup>
+                          <Link href={item.url} target="_blank">
+                            <Button className="bg-zinc-800 hover:bg-zinc-700">
+                              Open
+                            </Button>
+                          </Link>
+                        </CardTitle>
+                        <CardDescription className="text-neutral-400">
+                          {item.description}
+                        </CardDescription>
+                      </CardHeader>
 
-                  <CardFooter className="flex justify-between mt-auto">
-                    <p className="md:text-sm lg:text-sm text-xs text-slate-300">
-                      Made by{" "}
-                      <Link
-                        href={item.twitterUrl}
-                        target="_blank"
-                        className="hover:underline"
-                      >
-                        {item.creator}
-                      </Link>{" "}
-                    </p>
-                  </CardFooter>
-                </Card>
-              </>
-            ))}
-          </div>
+                      <CardFooter className="flex justify-between mt-auto">
+                        <p className="md:text-sm lg:text-sm text-xs text-slate-300">
+                          Made by{" "}
+                          <Link
+                            href={item.twitterUrl}
+                            target="_blank"
+                            className="hover:underline"
+                          >
+                            {item.creator}
+                          </Link>{" "}
+                        </p>
+                      </CardFooter>
+                    </Card>
+                  </>
+                ))}
+              </div>
+            </>
+          )}
         </section>
       </main>
     </>

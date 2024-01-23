@@ -80,7 +80,7 @@ async function getRequestsData(): Promise<
     return requests;
   } catch (err: any) {
     console.log(err);
-    throw new Error(err.message);
+    throw new Error(err);
   }
 }
 
@@ -99,7 +99,7 @@ async function declineRequest(id: string): Promise<string> {
     return "Request declined successfully";
   } catch (err: any) {
     console.log(err);
-    throw new Error(err.message);
+    throw new Error(err);
   }
 }
 

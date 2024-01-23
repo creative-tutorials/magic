@@ -21,7 +21,6 @@ import { IncomingHttpHeaders } from "http";
 dotenv.config();
 
 const allowedOrigins = JSON.parse(process.env.ALLOWED_ORIGINS!);
-console.log(allowedOrigins); // Array of allowed origins
 const corsOptions = {
   origin: allowedOrigins,
 };
@@ -36,25 +35,25 @@ const port = process.env.PORT;
 
 if (!port) throw new Error("Port not found");
 
-type RequestBody = {
-  appName: string;
-  icon: string;
-  description: string;
-  url: string;
-  userName: string;
+type appDetails = {
+  name: string; // The name of the project
+  icon: string; // The og image for the project
+  description: string; // The description of the project
+  url: string; // The url to the project
+  userName: string; // The name of the user who submitted the request
 };
 
 type CustomHeaders = IncomingHttpHeaders & {
   email: string;
 };
 
-type VerfBdy = {
-  name: string;
-  icon: string;
-  description: string;
-  url: string;
-  creator: string;
-  twitter: string;
+type projectInfo = {
+  name: string; // The name of the project
+  icon: string; // The og image for the project
+  description: string; // The description of the project
+  url: string; // The url to the project
+  creator: string; // The creator of the project
+  twitter: string; // The twitter handle of the project creator
 };
 
 const validateAPIKey = (req: Request, res: Response, next: NextFunction) => {
@@ -85,8 +84,8 @@ const resLimit = rateLimit({
 // app.use();
 
 const requestEntry = (req: Request, res: Response, next: NextFunction) => {
-  const { appName, description, url, userName }: RequestBody = req.body;
-  const requiredFields = [appName, description, url, userName];
+  const { name, description, url, userName }: appDetails = req.body;
+  const requiredFields = [name, description, url, userName];
   const { email } = req.headers as CustomHeaders;
 
   if (requiredFields.some((field) => !field)) {
@@ -103,7 +102,8 @@ const validateApprovalEntry = (
   res: Response,
   next: NextFunction
 ) => {
-  const { name, description, url, icon, creator, twitter }: VerfBdy = req.body;
+  const { name, description, url, icon, creator, twitter }: projectInfo =
+    req.body;
   const requiredFields = [name, description, url, icon, creator, twitter];
   if (requiredFields.some((field) => !field)) {
     return res.status(400).send({ error: "Missing one or more fields" });
@@ -125,21 +125,15 @@ app.post(
   reqLimit,
   requestEntry,
   async (req: Request, res: Response) => {
-    const { appName, description, url, userName }: RequestBody = req.body;
+    const { name, description, url, userName }: appDetails = req.body;
     const { email } = req.headers as CustomHeaders;
 
     try {
-      const verf = await checkDuplicate(appName, email);
+      const verf = await checkDuplicate(name, email);
 
       if (verf) return res.status(409).send({ error: "Duplicate request" });
 
-      const data = await createRequest(
-        appName,
-        description,
-        url,
-        userName,
-        email
-      );
+      const data = await createRequest(name, description, url, userName, email);
 
       if (data) return res.send({ data });
     } catch (err: any) {
@@ -166,7 +160,7 @@ app.post(
   reqLimit,
   validateApprovalEntry,
   async (req: Request, res: Response) => {
-    const { name, description, url, icon, creator, twitter }: VerfBdy =
+    const { name, description, url, icon, creator, twitter }: projectInfo =
       req.body;
 
     try {

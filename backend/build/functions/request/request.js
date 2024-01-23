@@ -67,7 +67,7 @@ async function getRequestsData() {
     }
     catch (err) {
         console.log(err);
-        throw new Error(err.message);
+        throw new Error(err);
     }
 }
 /**
@@ -85,7 +85,7 @@ async function declineRequest(id) {
     }
     catch (err) {
         console.log(err);
-        throw new Error(err.message);
+        throw new Error(err);
     }
 }
 export { createRequest, checkDuplicate, getRequestsData, declineRequest }; // Export the functions to be imported into one file

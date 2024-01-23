@@ -7,7 +7,6 @@ import { checkDuplicate, createRequest, declineRequest, getRequestsData, } from 
 import { approveRequest, checkAprvDuplicate, fetchApprovedApps, } from "../functions/approved/data.js";
 dotenv.config();
 const allowedOrigins = JSON.parse(process.env.ALLOWED_ORIGINS);
-console.log(allowedOrigins); // Array of allowed origins
 const corsOptions = {
     origin: allowedOrigins,
 };
@@ -44,8 +43,8 @@ const resLimit = rateLimit({
 });
 // app.use();
 const requestEntry = (req, res, next) => {
-    const { appName, description, url, userName } = req.body;
-    const requiredFields = [appName, description, url, userName];
+    const { name, description, url, userName } = req.body;
+    const requiredFields = [name, description, url, userName];
     const { email } = req.headers;
     if (requiredFields.some((field) => !field)) {
         return res.status(400).send({ error: "Missing one or more fields" });
@@ -71,13 +70,13 @@ app.get("/status", async (_, res) => {
     res.send("OK");
 });
 app.post("/api/request", reqLimit, requestEntry, async (req, res) => {
-    const { appName, description, url, userName } = req.body;
+    const { name, description, url, userName } = req.body;
     const { email } = req.headers;
     try {
-        const verf = await checkDuplicate(appName, email);
+        const verf = await checkDuplicate(name, email);
         if (verf)
             return res.status(409).send({ error: "Duplicate request" });
-        const data = await createRequest(appName, description, url, userName, email);
+        const data = await createRequest(name, description, url, userName, email);
         if (data)
             return res.send({ data });
     }
