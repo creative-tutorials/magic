@@ -56,6 +56,7 @@ const requestEntry = (req, res, next) => {
 };
 const validateApprovalEntry = (req, res, next) => {
     const { name, description, url, icon, creator, twitter } = req.body;
+    const { recordid } = req.headers;
     const requiredFields = [name, description, url, icon, creator, twitter];
     if (requiredFields.some((field) => !field)) {
         return res.status(400).send({ error: "Missing one or more fields" });
@@ -64,6 +65,9 @@ const validateApprovalEntry = (req, res, next) => {
         return res.status(400).send({ error: "Twitter handle must start with @" });
     if (!twitter.startsWith("https://twitter.com/"))
         return res.status(400).send({ error: "Must include twitter base url" });
+    if (!recordid) {
+        return res.status(401).send({ error: "Unauthorized" });
+    }
     return next();
 };
 app.get("/status", async (_, res) => {
@@ -99,11 +103,12 @@ app.get("/api/request", resLimit, async (_, res) => {
 });
 app.post("/api/approve", reqLimit, validateApprovalEntry, async (req, res) => {
     const { name, description, url, icon, creator, twitter } = req.body;
+    const { recordid } = req.headers;
     try {
         const verf = await checkAprvDuplicate(name);
         if (verf)
             return res.status(409).send({ error: "Duplicate request" });
-        const data = await approveRequest(name, description, url, icon, creator, twitter);
+        const data = await approveRequest(recordid, name, description, url, icon, creator, twitter);
         if (data)
             return res.send({ data });
     }

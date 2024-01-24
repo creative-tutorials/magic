@@ -18,7 +18,7 @@ async function checkAprvDuplicate(name) {
         throw new Error(err);
     }
 }
-async function approveRequest(appName, description, url, icon, creator, twitterUrl) {
+async function approveRequest(id, appName, description, url, icon, creator, twitterUrl) {
     try {
         const createdRecord = await xata.db.approved.create({
             appname: appName,
@@ -35,6 +35,9 @@ async function approveRequest(appName, description, url, icon, creator, twitterU
     catch (error) {
         throw new Error(error);
     }
+    finally {
+        await xata.db.requests.delete(id);
+    }
 }
 async function fetchApprovedApps() {
     try {
@@ -48,7 +51,7 @@ async function fetchApprovedApps() {
             "twitterUrl",
         ])
             .getMany();
-        if (!approvedApps)
+        if (!approvedApps || approvedApps.length === 0)
             throw new Error("No approved apps found");
         return approvedApps;
     }

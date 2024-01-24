@@ -45,6 +45,7 @@ type appDetails = {
 
 type CustomHeaders = IncomingHttpHeaders & {
   email: string;
+  recordid: string;
 };
 
 type projectInfo = {
@@ -104,6 +105,7 @@ const validateApprovalEntry = (
 ) => {
   const { name, description, url, icon, creator, twitter }: projectInfo =
     req.body;
+  const { recordid } = req.headers as CustomHeaders;
   const requiredFields = [name, description, url, icon, creator, twitter];
   if (requiredFields.some((field) => !field)) {
     return res.status(400).send({ error: "Missing one or more fields" });
@@ -113,6 +115,9 @@ const validateApprovalEntry = (
 
   if (!twitter.startsWith("https://twitter.com/"))
     return res.status(400).send({ error: "Must include twitter base url" });
+  if (!recordid) {
+    return res.status(401).send({ error: "Unauthorized" });
+  }
   return next();
 };
 
@@ -163,12 +168,15 @@ app.post(
     const { name, description, url, icon, creator, twitter }: projectInfo =
       req.body;
 
+    const { recordid } = req.headers as CustomHeaders;
+
     try {
       const verf = await checkAprvDuplicate(name);
 
       if (verf) return res.status(409).send({ error: "Duplicate request" });
 
       const data = await approveRequest(
+        recordid,
         name,
         description,
         url,

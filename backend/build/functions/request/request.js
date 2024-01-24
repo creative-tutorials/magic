@@ -61,7 +61,7 @@ async function getRequestsData() {
         const requests = await xata.db.requests
             .select(["appname", "description", "url", "email", "username"])
             .getMany();
-        if (!requests)
+        if (!requests || requests.length === 0)
             throw new Error("No record found");
         return requests;
     }

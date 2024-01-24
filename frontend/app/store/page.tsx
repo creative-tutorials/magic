@@ -39,7 +39,7 @@ export default function Page() {
     return () => {
       setCount(0);
     };
-  }, [count]);
+  }, [count, url]);
 
   return (
     <>

@@ -20,6 +20,7 @@ async function checkAprvDuplicate(name: string) {
 }
 
 async function approveRequest(
+  id: string,
   appName: string,
   description: string,
   url: string,
@@ -42,6 +43,8 @@ async function approveRequest(
     return "Request approved successfully";
   } catch (error: any) {
     throw new Error(error);
+  } finally {
+    await xata.db.requests.delete(id);
   }
 }
 
@@ -58,7 +61,8 @@ async function fetchApprovedApps() {
       ])
       .getMany();
 
-    if (!approvedApps) throw new Error("No approved apps found");
+    if (!approvedApps || approvedApps.length === 0)
+      throw new Error("No approved apps found");
 
     return approvedApps;
   } catch (error: any) {

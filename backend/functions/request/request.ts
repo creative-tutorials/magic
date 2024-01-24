@@ -75,7 +75,7 @@ async function getRequestsData(): Promise<
       .select(["appname", "description", "url", "email", "username"])
       .getMany();
 
-    if (!requests) throw new Error("No record found");
+    if (!requests || requests.length === 0) throw new Error("No record found");
 
     return requests;
   } catch (err: any) {

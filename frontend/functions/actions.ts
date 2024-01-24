@@ -8,7 +8,6 @@ async function fetchApps(
   url: "https://xbrid.vercel.app" | "http://localhost:8080"
 ) {
   setIsFetching(true);
-  ("use server");
 
   axios
     .get(`${url}/api/apps`, {
@@ -18,7 +17,6 @@ async function fetchApps(
       },
     })
     .then(async (data) => {
-      console.log(data.data);
       setData(data.data);
       setIsFetching(false);
     })
@@ -27,6 +25,12 @@ async function fetchApps(
       const errMsg = err.response.data.error;
       setData([]);
       setIsFetching(false);
+      toast.error(errMsg, {
+        action: {
+          label: "Close",
+          onClick: () => console.log("Toast dismissed"),
+        },
+      });
     });
 }
 
@@ -51,12 +55,11 @@ async function createRequest(
 ) {
   if (!isSignedIn) return;
   setFormData({ ...formData, isPending: true });
-  ("use server");
   axios
     .post(
       `${url}/api/request`,
       {
-        appName: formData.appname,
+        name: formData.appname,
         description: formData.description,
         url: formData.url,
         userName: user?.username,
