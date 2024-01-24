@@ -4,7 +4,7 @@ import rateLimit from "express-rate-limit";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import { checkDuplicate, createRequest, declineRequest, getRequestsData, } from "../functions/request/request.js";
-import { approveRequest, checkAprvDuplicate, fetchApprovedApps, } from "../functions/approved/data.js";
+import { approveRequest, checkAprvDuplicate, fetchApprovedApps, filteredApps, } from "../functions/approved/data.js";
 dotenv.config();
 const allowedOrigins = JSON.parse(process.env.ALLOWED_ORIGINS);
 const corsOptions = {
@@ -70,6 +70,13 @@ const validateApprovalEntry = (req, res, next) => {
     }
     return next();
 };
+const validateName = (req, res, next) => {
+    const { name } = req.params;
+    if (!name) {
+        return res.status(400).send({ error: "Project name is required" });
+    }
+    return next();
+};
 app.get("/status", async (_, res) => {
     res.send("OK");
 });
@@ -132,6 +139,21 @@ app.delete("/api/decline/:id", reqLimit, async (req, res) => {
 app.get("/api/apps", resLimit, async (_, res) => {
     try {
         const data = await fetchApprovedApps();
+        if (data) {
+            return res.send(data);
+        }
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: err.message });
+    }
+});
+app.get("/api/app/:name", 
+// resLimit,
+validateName, async (req, res) => {
+    const { name } = req.params;
+    try {
+        const data = await filteredApps(name);
         if (data) {
             return res.send(data);
         }

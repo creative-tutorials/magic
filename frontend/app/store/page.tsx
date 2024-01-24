@@ -1,33 +1,35 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, SetStateAction } from "react";
 import { useAPIURL } from "@/hooks/get-url";
 import Image from "next/image";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import axios from "axios";
 import { fetchApps } from "@/functions/actions";
-import { Button } from "@/components/ui/button";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, Search } from "lucide-react";
+import { Cards } from "@/components/layout/cards";
+import axios from "axios";
+import { Separator } from "@/components/ui/separator";
+import { filteredApps } from "@/types/apps";
 import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-type typeApps = {
-  appname: string;
-  description: string;
-  url: string;
-  appicon: string;
-  creator: string;
-  twitterUrl: string;
-};
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export default function Page() {
   const [count, setCount] = useState(0);
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState<filteredApps>({
+    appicon: "",
+    appname: "",
+    description: "",
+  });
+  const [isFiltering, setIsFiltering] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const url = useAPIURL();
 
@@ -40,6 +42,39 @@ export default function Page() {
       setCount(0);
     };
   }, [count, url]);
+
+  const updateSearch = (value: SetStateAction<string>) => {
+    if (!value) {
+      setFilteredData({});
+      return;
+    }
+    return filterApps(value);
+  };
+
+  const filterApps = (value: SetStateAction<string>) => {
+    setIsFiltering(true);
+    axios
+      .get(`${url}/api/app/${value}`, {
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.NEXT_PUBLIC_API_KEY,
+        },
+      })
+      .then((data) => {
+        setFilteredData({
+          ...filteredData,
+          appicon: data.data.appicon,
+          appname: data.data.appname,
+          description: data.data.description,
+        });
+        setIsFiltering(false);
+      })
+      .catch((err) => {
+        console.error(err.response);
+        setIsFiltering(false);
+        setFilteredData({});
+      });
+  };
 
   return (
     <>
@@ -67,11 +102,80 @@ export default function Page() {
             </p>
           </hgroup>
           <div id="input" className="w-full max-w-md">
-            <Input
-              type="text"
-              placeholder="Search"
-              className="w-full border border-zinc-800 bg-zinc-900 cursor-pointer p-6"
-            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Input
+                  type="text"
+                  placeholder="Search"
+                  className="w-full border border-zinc-800 bg-zinc-900 cursor-pointer p-6"
+                />
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-zinc-950 border border-zinc-800">
+                <DialogHeader>
+                  <DialogTitle className="text-sm font-normal">
+                    Search powered by{" "}
+                    <Link
+                      href="https://xata.io/"
+                      target="_blank"
+                      className="underline decoration-2 decoration-red-600"
+                    >
+                      Xata
+                    </Link>
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="py-4 flex flex-col gap-5">
+                  <div className="flex flex-col gap-3">
+                    <Label htmlFor="name" className="">
+                      Project name
+                    </Label>
+                    <Input
+                      id="name"
+                      placeholder="uploadthing"
+                      className="col-span-3 placeholder:text-neutral-400 px-4 p-6"
+                      autoComplete="off"
+                      // value={search}
+                      onChange={(e) => updateSearch(e.target.value)}
+                    />
+                  </div>
+                  <div id="data-wrapper" className="flex flex-col gap-8 mt-4">
+                    {isFiltering && (
+                      <p className="text-center">Gathering data...</p>
+                    )}
+                    <>
+                      {Object.keys(filteredData).length > 0 && !isFiltering && (
+                        <div id="data">
+                          <div id="top" className="flex gap-3">
+                            <div id="icon">
+                              <Image
+                                src={filteredData.appicon}
+                                width={80}
+                                height={80}
+                                alt={filteredData.appname}
+                                className="rounded-full w-12 h-12 object-cover max-w-none min-w-0"
+                              />
+                            </div>
+                            <hgroup className="flex flex-col gap-1">
+                              <p id="name">{filteredData.appname}</p>
+                              <p
+                                id="description"
+                                className="text-sm text-slate-400"
+                              >
+                                {filteredData.description}
+                              </p>
+                            </hgroup>
+                          </div>
+                          <Separator className="my-7 w-full h-px border border-zinc-800" />
+                        </div>
+                      )}
+                      {Object.keys(filteredData).length === 0 &&
+                        !isFiltering && (
+                          <p className="text-center">No data found</p>
+                        )}
+                    </>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </section>
         <section className="flex items-center justify-center flex-col gap-10 md:p-10 lg:p-10 p-4">
@@ -100,61 +204,7 @@ export default function Page() {
             </div>
           ) : (
             <>
-              <div
-                id="cards"
-                className="md:grid md:grid-cols-3 lg:grid lg:grid-cols-3 gap-2 flex flex-col"
-              >
-                {data.map((item: typeApps, index: number) => (
-                  <>
-                    <Card className="w-full h-full flex flex-col bg-zinc-900 border border-zinc-800">
-                      <CardHeader className="flex flex-col gap-3">
-                        <div
-                          id="CardImage"
-                          className="w-full h-full rounded-lg overflow-hidden object-cover border-2 border-transparent transition-all hover:border-red-300"
-                        >
-                          <Link href={item.url} target="_blank">
-                            <Image
-                              src={item.appicon}
-                              width={500}
-                              height={500}
-                              alt={item.appname}
-                              className="w-full h-full rounded-lg  overflow-hidden object-cover transition-all hover:scale-110"
-                            />
-                          </Link>
-                        </div>
-                        <CardTitle className="flex items-center justify-between">
-                          <hgroup>
-                            <p className="text-white md:font-bold lg:font-bold font-medium">
-                              {item.appname}
-                            </p>
-                          </hgroup>
-                          <Link href={item.url} target="_blank">
-                            <Button className="bg-zinc-800 hover:bg-zinc-700">
-                              Open
-                            </Button>
-                          </Link>
-                        </CardTitle>
-                        <CardDescription className="text-neutral-400">
-                          {item.description}
-                        </CardDescription>
-                      </CardHeader>
-
-                      <CardFooter className="flex justify-between mt-auto">
-                        <p className="md:text-sm lg:text-sm text-xs text-slate-300">
-                          Made by{" "}
-                          <Link
-                            href={item.twitterUrl}
-                            target="_blank"
-                            className="hover:underline"
-                          >
-                            {item.creator}
-                          </Link>{" "}
-                        </p>
-                      </CardFooter>
-                    </Card>
-                  </>
-                ))}
-              </div>
+              <Cards data={data} />
             </>
           )}
         </section>

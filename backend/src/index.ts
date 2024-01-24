@@ -15,6 +15,7 @@ import {
   approveRequest,
   checkAprvDuplicate,
   fetchApprovedApps,
+  filteredApps,
 } from "../functions/approved/data.js";
 import { IncomingHttpHeaders } from "http";
 
@@ -121,6 +122,14 @@ const validateApprovalEntry = (
   return next();
 };
 
+const validateName = (req: Request, res: Response, next: NextFunction) => {
+  const { name } = req.params;
+  if (!name) {
+    return res.status(400).send({ error: "Project name is required" });
+  }
+  return next();
+};
+
 app.get("/status", async (_, res: Response) => {
   res.send("OK");
 });
@@ -219,6 +228,25 @@ app.get("/api/apps", resLimit, async (_, res: Response) => {
     return res.status(500).send({ error: err.message });
   }
 });
+
+app.get(
+  "/api/app/:name",
+  // resLimit,
+  validateName,
+  async (req: Request, res: Response) => {
+    const { name } = req.params;
+
+    try {
+      const data = await filteredApps(name);
+      if (data) {
+        return res.send(data);
+      }
+    } catch (err: any) {
+      console.log(err);
+      return res.status(500).send({ error: err.message });
+    }
+  }
+);
 
 app.listen(port, () => {
   console.log(`🟢 [server] Online and listening on port ${port}.`);

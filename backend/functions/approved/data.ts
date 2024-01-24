@@ -70,4 +70,20 @@ async function fetchApprovedApps() {
   }
 }
 
-export { checkAprvDuplicate, approveRequest, fetchApprovedApps };
+async function filteredApps(name: string) {
+  try {
+    const filtered = await xata.db.approved
+      .filter({
+        appname: { $iContains: name },
+      })
+      .getFirst();
+
+    if (!filtered) throw new Error("No record found");
+
+    return filtered;
+  } catch (err: any) {
+    throw new Error(err);
+  }
+}
+
+export { checkAprvDuplicate, approveRequest, fetchApprovedApps, filteredApps };
