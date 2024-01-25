@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, SetStateAction } from "react";
 import { useAPIURL } from "@/hooks/get-url";
+import { debounce } from "lodash";
 import Image from "next/image";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -13,8 +14,6 @@ import { filteredApps } from "@/types/apps";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -28,6 +27,7 @@ export default function Page() {
     appicon: "",
     appname: "",
     description: "",
+    url: "",
   });
   const [isFiltering, setIsFiltering] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
@@ -43,12 +43,23 @@ export default function Page() {
     };
   }, [count, url]);
 
+  const debouncedSearch = debounce((term) => {
+    console.info("Performing search:", term);
+    return filterApps(term);
+  }, 500);
+
   const updateSearch = (value: SetStateAction<string>) => {
     if (!value) {
-      setFilteredData({});
+      setFilteredData({
+        appicon: "",
+        appname: "",
+        description: "",
+        url: "",
+      });
       return;
     }
-    return filterApps(value);
+    // wait for user to stop typing
+    debouncedSearch(value);
   };
 
   const filterApps = (value: SetStateAction<string>) => {
@@ -66,13 +77,19 @@ export default function Page() {
           appicon: data.data.appicon,
           appname: data.data.appname,
           description: data.data.description,
+          url: data.data.url,
         });
         setIsFiltering(false);
       })
       .catch((err) => {
         console.error(err.response);
         setIsFiltering(false);
-        setFilteredData({});
+        setFilteredData({
+          appicon: "",
+          appname: "",
+          description: "",
+          url: "",
+        });
       });
   };
 
@@ -96,9 +113,9 @@ export default function Page() {
               Store
             </h1>
             <p className="md:text-xl lg:text-xl text-slate-400">
-              Let magic be your guide to finding webapps that you already use.{" "}
-              <br />
-              Looking for a webapp shouldn&apos;t be that hard
+              Let magic be your guide to finding webapps & services that you
+              already use. <br />
+              Looking for things shouldn&apos;t be that hard
             </p>
           </hgroup>
           <div id="input" className="w-full max-w-md">
@@ -133,7 +150,6 @@ export default function Page() {
                       placeholder="uploadthing"
                       className="col-span-3 placeholder:text-neutral-400 px-4 p-6"
                       autoComplete="off"
-                      // value={search}
                       onChange={(e) => updateSearch(e.target.value)}
                     />
                   </div>
@@ -141,37 +157,48 @@ export default function Page() {
                     {isFiltering && (
                       <p className="text-center">Gathering data...</p>
                     )}
-                    <>
-                      {Object.keys(filteredData).length > 0 && !isFiltering && (
-                        <div id="data">
-                          <div id="top" className="flex gap-3">
-                            <div id="icon">
-                              <Image
-                                src={filteredData.appicon}
-                                width={80}
-                                height={80}
-                                alt={filteredData.appname}
-                                className="rounded-full w-12 h-12 object-cover max-w-none min-w-0"
-                              />
+                    {Object.values(filteredData).every(
+                      (value) => value !== ""
+                    ) &&
+                      !isFiltering && (
+                        <>
+                          <Link href={filteredData.url} target="_blank">
+                            <div
+                              id="data"
+                              className="w-full bg-neutral-950 border hover:border-dotted border-zinc-800 rounded-md p-4"
+                            >
+                              <div id="top" className="flex gap-3">
+                                <div id="icon">
+                                  <Image
+                                    src={filteredData.appicon}
+                                    width={80}
+                                    height={80}
+                                    alt={filteredData.appname}
+                                    className="rounded-full w-12 h-12 object-cover max-w-none min-w-0"
+                                  />
+                                </div>
+                                <hgroup className="flex flex-col gap-1">
+                                  <p id="name">{filteredData.appname}</p>
+                                  <p
+                                    id="description"
+                                    className="text-sm text-slate-400"
+                                  >
+                                    {filteredData.description}
+                                  </p>
+                                </hgroup>
+                              </div>
                             </div>
-                            <hgroup className="flex flex-col gap-1">
-                              <p id="name">{filteredData.appname}</p>
-                              <p
-                                id="description"
-                                className="text-sm text-slate-400"
-                              >
-                                {filteredData.description}
-                              </p>
-                            </hgroup>
-                          </div>
+                          </Link>
                           <Separator className="my-7 w-full h-px border border-zinc-800" />
-                        </div>
+                        </>
                       )}
-                      {Object.keys(filteredData).length === 0 &&
-                        !isFiltering && (
-                          <p className="text-center">No data found</p>
-                        )}
-                    </>
+
+                    {Object.values(filteredData).every(
+                      (value) => value === ""
+                    ) &&
+                      !isFiltering && (
+                        <p className="text-center">No data found</p>
+                      )}
                   </div>
                 </div>
               </DialogContent>
@@ -184,7 +211,7 @@ export default function Page() {
               Explore
             </h3>
             <p className="md:text-base lg:text-base text-sm text-slate-400">
-              Browse through our webstore to find the app that you need.
+              Browse through our webstore to find what you need.
             </p>
           </hgroup>
         </section>
@@ -194,8 +221,8 @@ export default function Page() {
               Applications
             </h3>
             <p className="md:text-base lg:text-base text-sm text-slate-400">
-              Explore our list of webapps and discover the ones that fits your
-              needs.
+              Explore our list of different services and discover the ones that
+              fits your needs.
             </p>
           </hgroup>
           {isFetching ? (

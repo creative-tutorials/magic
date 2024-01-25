@@ -38,8 +38,8 @@ export default function Page() {
                 Launch your app for the web
               </h1>
               <p className="md:text-lg lg:text-lg text-sm font-medium text-neutral-100">
-                Take the chance to make a request to Magic on the app you would
-                like us to showcase.
+                Take the chance to make a request to Magic on the service you
+                would like us to showcase.
               </p>
             </hgroup>
             <Dialog>

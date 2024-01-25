@@ -2,6 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+
+const ImgArr = [
+  "/carousel/og-uploadthing.png",
+  "/carousel/og-twitch.png",
+  "/carousel/og-discord.png",
+  "/carousel/og-lucide.png",
+  "/carousel/og-superbase.png",
+];
 
 export default function Home() {
   return (
@@ -11,11 +25,11 @@ export default function Home() {
           <h1 className="md:text-7xl lg:text-7xl text-5xl text-white font-bold text-center">
             The appstore for{" "}
             <span className="text-red-600 drop-shadow-[0_35px_35px_#E41717]">
-              webapps
+              services
             </span>
           </h1>
           <p className="md:text-xl lg:text-xl text-base text-slate-400 md:p-0 lg:p-0 px-4">
-            Find webapps that you already use and love on the internet with
+            Find services that you already use and love on the internet with
             Magic
           </p>
         </hgroup>
@@ -31,16 +45,35 @@ export default function Home() {
             </Button>
           </Link>
         </div>
-        <div id="image" className="w-full h-full">
-          <Image
-            src="/uploadthing - magic.png"
-            width={500}
-            height={500}
-            priority
-            unoptimized
-            className="w-full h-full"
-            alt="Picture of the author"
-          />
+        <div id="image" className="w-full h-auto">
+          <Carousel
+            className="w-full h-auto "
+            opts={{
+              loop: true,
+            }}
+          >
+            <CarouselContent className="w-full h-auto ">
+              {ImgArr.map((item, index) => (
+                <CarouselItem key={index}>
+                  <div className="">
+                    <Card className="border-none">
+                      <CardContent className="p-4">
+                        <Image
+                          src={item}
+                          width={500}
+                          height={500}
+                          priority
+                          unoptimized
+                          className="w-full md:h-[600px] lg:h-[600px] h-[200px] md:object-cover lg:object-cover rounded-lg border-2 border-red-600 shadow shadow-red-600"
+                          alt="Picture of the author"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
         </div>
       </section>
     </main>

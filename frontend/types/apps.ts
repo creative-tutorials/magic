@@ -8,5 +8,5 @@ export type typeApps = {
 };
 export type filteredApps = Pick<
   typeApps,
-  "appicon" | "appname" | "description"
+  "appicon" | "appname" | "description" | "url"
 >;
