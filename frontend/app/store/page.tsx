@@ -105,7 +105,7 @@ export default function Page() {
               priority
               unoptimized
               className="w-full h-full rounded-lg shadow-md shadow-purple-600"
-              alt="Picture of the author"
+              alt="Different apps"
             />
           </div>
           <hgroup className="text-center flex flex-col items-center justify-center gap-6">
@@ -125,6 +125,7 @@ export default function Page() {
                   type="text"
                   placeholder="Search"
                   className="w-full border border-zinc-800 bg-zinc-900 cursor-pointer p-6"
+                  readOnly
                 />
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px] bg-zinc-950 border border-zinc-800">

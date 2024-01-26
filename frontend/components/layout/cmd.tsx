@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Send, GitGraph, CreditCard, Package, Home, User } from "lucide-react";
-
+import { CommandState } from "@/types/cmd";
 import {
   CommandDialog,
   CommandEmpty,
@@ -11,9 +11,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 
-import { CommandState } from "@/types/cmd";
-
-export function CmdBox({ isOpen, openSetter }: CommandState) {
+export function CmdBox({ isOpen, openSetter, url }: CommandState) {
   return (
     <CommandDialog open={isOpen} onOpenChange={openSetter}>
       <CommandInput
@@ -35,16 +33,14 @@ export function CmdBox({ isOpen, openSetter }: CommandState) {
               <span>Changelog</span>
             </CommandItem>
           </Link>
-          <Link href="/store">
+          <Link href={`/${url.path}`}>
             <CommandItem>
-              <Package className="mr-2 h-4 w-4" />
-              <span>Store</span>
-            </CommandItem>
-          </Link>
-          <Link href="/store/request">
-            <CommandItem>
-              <Send className="mr-2 h-4 w-4" />
-              <span>Request</span>
+              {url.linkText === "Request" ? (
+                <Send className="mr-2 h-4 w-4" />
+              ) : (
+                <Package className="mr-2 h-4 w-4" />
+              )}
+              <span>{url.linkText}</span>
             </CommandItem>
           </Link>
         </CommandGroup>
@@ -56,12 +52,12 @@ export function CmdBox({ isOpen, openSetter }: CommandState) {
               <span>Profile</span>
             </CommandItem>
           </Link>
-          <Link href="/billing">
+          {/* <Link href="/billing">
             <CommandItem>
               <CreditCard className="mr-2 h-4 w-4" />
               <span>Billing</span>
             </CommandItem>
-          </Link>
+          </Link> */}
         </CommandGroup>
       </CommandList>
     </CommandDialog>

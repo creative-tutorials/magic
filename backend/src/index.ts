@@ -93,6 +93,12 @@ const requestEntry = (req: Request, res: Response, next: NextFunction) => {
   if (requiredFields.some((field) => !field)) {
     return res.status(400).send({ error: "Missing one or more fields" });
   }
+  // if url incudes trailing /
+  if (url[url.length - 1] === "/") {
+    return res
+      .status(400)
+      .send({ error: "Url must not include trailing slash" });
+  }
   if (!email) {
     return res.status(401).send({ error: "Unauthorized" });
   }

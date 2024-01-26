@@ -3,21 +3,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useImgArr } from "@/hooks/use-img";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
 
-const ImgArr = [
-  "/carousel/og-uploadthing.png",
-  "/carousel/og-twitch.png",
-  "/carousel/og-discord.png",
-  "/carousel/og-lucide.png",
-  "/carousel/og-superbase.png",
-];
-
 export default function Home() {
+  const images = useImgArr();
   return (
     <main className="mt-32">
       <section className="flex items-center justify-center flex-col gap-10 md:p-32 lg:p-32">
@@ -39,7 +33,10 @@ export default function Home() {
               Store
             </Button>
           </Link>
-          <Link href="/">
+          <Link
+            href="https://github.com/creative-tutorials/magic"
+            target="_blank"
+          >
             <Button className="bg-white hover:bg-gray-100 text-black p-6 px-10 flex items-center gap-1 font-semibold">
               <Github /> Github
             </Button>
@@ -53,7 +50,7 @@ export default function Home() {
             }}
           >
             <CarouselContent className="w-full h-auto ">
-              {ImgArr.map((item, index) => (
+              {images.map((item, index) => (
                 <CarouselItem key={index}>
                   <div className="">
                     <Card className="border-none">
@@ -65,7 +62,7 @@ export default function Home() {
                           priority
                           unoptimized
                           className="w-full md:h-[600px] lg:h-[600px] h-[200px] md:object-cover lg:object-cover rounded-lg border-2 border-red-600 shadow shadow-red-600"
-                          alt="Picture of the author"
+                          alt={item.split("/")[2].split(".")[0]}
                         />
                       </CardContent>
                     </Card>

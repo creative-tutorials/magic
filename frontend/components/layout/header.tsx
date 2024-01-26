@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Github, Command, LogOut, User } from "lucide-react";
+import { urlType } from "@/types/url-type";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +25,7 @@ export function Header() {
   const router = useRouter();
   const { user } = useUser();
   const { signOut } = useClerk();
-  const [url, setUrl] = useState({
+  const [url, setUrl] = useState<urlType>({
     path: "",
     linkText: "",
   });
@@ -63,12 +64,12 @@ export function Header() {
             </Link>
           </div>
           <div id="links" className="md:flex lg:flex hidden items-center gap-3">
-            <Link
+            {/* <Link
               href="/pricing"
               className="font-medium text-neutral-300 hover:text-white"
             >
               Pricing
-            </Link>
+            </Link> */}
             <Link
               href="/changelog"
               className="font-medium text-neutral-300 hover:text-white"
@@ -125,7 +126,7 @@ export function Header() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="w-auto bg-zinc-800 h-px" />
                     <DropdownMenuItem
-                      className="focus:bg-zinc-800"
+                      className="focus:bg-red-800 focus:text-red-200"
                       onClick={() => signOut(() => router.push("/"))}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
@@ -141,7 +142,7 @@ export function Header() {
           </div>
         </div>
       </header>
-      <CmdBox isOpen={isOpen} openSetter={openSetter} />
+      <CmdBox isOpen={isOpen} openSetter={openSetter} url={url} />
     </>
   );
 }

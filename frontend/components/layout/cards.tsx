@@ -22,7 +22,7 @@ export function Cards(props: { data: typeApps[] }) {
             <CardHeader className="flex flex-col gap-3">
               <div
                 id="CardImage"
-                className="w-full h-full rounded-lg overflow-hidden object-cover border-2 border-transparent transition-all hover:border-red-300"
+                className="w-full md:h-[230px] lg:h-[230px] h-full rounded-lg overflow-hidden border-2 border-transparent transition-all hover:border-red-300"
               >
                 <Link href={item.url} target="_blank">
                   <Image
@@ -30,7 +30,7 @@ export function Cards(props: { data: typeApps[] }) {
                     width={500}
                     height={500}
                     alt={item.appname}
-                    className="w-full h-full rounded-lg  overflow-hidden object-cover transition-all hover:scale-110"
+                    className="w-full md:h-[230px] lg:h-[230px] h-full rounded-lg overflow-hidden transition-all hover:scale-110"
                   />
                 </Link>
               </div>
