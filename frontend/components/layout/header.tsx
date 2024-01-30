@@ -55,10 +55,10 @@ export function Header() {
           <div id="logo">
             <Link href={"/"}>
               <Image
-                src="/icon-transparent.png"
+                src="/icon.svg"
                 alt="Magic logo"
-                width={60}
-                height={60}
+                width={50}
+                height={50}
                 onClick={() => router.refresh()}
               />
             </Link>

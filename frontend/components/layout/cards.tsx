@@ -18,7 +18,7 @@ export function Cards(props: { data: typeApps[] }) {
     >
       {props.data.map((item: typeApps, index: number) => (
         <>
-          <Card className="w-full h-full flex flex-col bg-zinc-900 border border-zinc-800">
+          <Card className="w-full h-full flex flex-col bg-[#090909] border border-zinc-800">
             <CardHeader className="flex flex-col gap-3">
               <div
                 id="CardImage"

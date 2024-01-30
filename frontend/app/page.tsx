@@ -60,8 +60,7 @@ export default function Home() {
                           width={500}
                           height={500}
                           priority
-                          unoptimized
-                          className="w-full md:h-[600px] lg:h-[600px] h-[200px] md:object-cover lg:object-cover rounded-lg border-2 border-red-600 shadow shadow-red-600"
+                          className="w-full md:h-[600px] lg:h-[600px] h-[170px] md:object-cover lg:object-cover rounded-lg border-2 border-red-600 shadow shadow-red-600"
                           alt={item.split("/")[2].split(".")[0]}
                         />
                       </CardContent>

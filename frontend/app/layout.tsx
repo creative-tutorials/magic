@@ -14,9 +14,9 @@ export const metadata: Metadata = {
   description: "The appstore for webapps",
   keywords: ["Magic", "Appstore", "Webapp", "App"],
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
   openGraph: {
     title: "Magic - The appstore for webapps",

@@ -4,7 +4,8 @@ import rateLimit from "express-rate-limit";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import { checkDuplicate, createRequest, declineRequest, getRequestsData, } from "../functions/request/request.js";
-import { approveRequest, checkAprvDuplicate, fetchApprovedApps, filteredApps, } from "../functions/approved/data.js";
+import { approveRequest, checkAprvDuplicate, fetchApprovedApps, filterAppsByCategory, filteredApps, } from "../functions/approved/data.js";
+import { checkCatExist, fetchCategories } from "../functions/categories/cat.js";
 dotenv.config();
 const allowedOrigins = JSON.parse(process.env.ALLOWED_ORIGINS);
 const corsOptions = {
@@ -41,7 +42,6 @@ const resLimit = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
-// app.use();
 const requestEntry = (req, res, next) => {
     const { name, description, url, userName } = req.body;
     const requiredFields = [name, description, url, userName];
@@ -61,9 +61,17 @@ const requestEntry = (req, res, next) => {
     return next();
 };
 const validateApprovalEntry = (req, res, next) => {
-    const { name, description, url, icon, creator, twitter } = req.body;
+    const { name, description, url, icon, creator, twitter, category, } = req.body;
     const { recordid } = req.headers;
-    const requiredFields = [name, description, url, icon, creator, twitter];
+    const requiredFields = [
+        name,
+        description,
+        url,
+        icon,
+        creator,
+        twitter,
+        category,
+    ];
     if (requiredFields.some((field) => !field)) {
         return res.status(400).send({ error: "Missing one or more fields" });
     }
@@ -105,9 +113,8 @@ app.post("/api/request", reqLimit, requestEntry, async (req, res) => {
 app.get("/api/request", resLimit, async (_, res) => {
     try {
         const data = await getRequestsData();
-        if (data) {
+        if (data)
             return res.send(data);
-        }
     }
     catch (err) {
         console.log(err);
@@ -115,15 +122,17 @@ app.get("/api/request", resLimit, async (_, res) => {
     }
 });
 app.post("/api/approve", reqLimit, validateApprovalEntry, async (req, res) => {
-    const { name, description, url, icon, creator, twitter } = req.body;
+    const { name, description, url, icon, creator, twitter, category, } = req.body;
     const { recordid } = req.headers;
     try {
-        const verf = await checkAprvDuplicate(name);
-        if (verf)
+        const isApproval = await checkAprvDuplicate(name);
+        if (isApproval)
             return res.status(409).send({ error: "Duplicate request" });
-        const data = await approveRequest(recordid, name, description, url, icon, creator, twitter);
-        if (data)
+        const data = await approveRequest(recordid, name, description, url, icon, creator, twitter, category);
+        if (data) {
+            await checkCatExist(category);
             return res.send({ data });
+        }
     }
     catch (err) {
         console.log(err);
@@ -145,24 +154,43 @@ app.delete("/api/decline/:id", reqLimit, async (req, res) => {
 app.get("/api/apps", resLimit, async (_, res) => {
     try {
         const data = await fetchApprovedApps();
-        if (data) {
+        if (data)
             return res.send(data);
-        }
     }
     catch (err) {
         console.log(err);
         return res.status(500).send({ error: err.message });
     }
 });
-app.get("/api/app/:name", 
-// resLimit,
-validateName, async (req, res) => {
+app.get("/api/app/:name", validateName, async (req, res) => {
     const { name } = req.params;
     try {
         const data = await filteredApps(name);
-        if (data) {
+        if (data)
             return res.send(data);
-        }
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: err.message });
+    }
+});
+app.get("/api/filter/:cat", async (req, res) => {
+    const { cat } = req.params;
+    try {
+        const data = await filterAppsByCategory(cat);
+        if (data)
+            return res.send(data);
+    }
+    catch (err) {
+        console.log(err);
+        return res.status(500).send({ error: err.message });
+    }
+});
+app.get("/api/categories", async (_, res) => {
+    try {
+        const data = await fetchCategories();
+        if (data)
+            return res.send(data);
     }
     catch (err) {
         console.log(err);

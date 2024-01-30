@@ -15,9 +15,11 @@ import {
   approveRequest,
   checkAprvDuplicate,
   fetchApprovedApps,
+  filterAppsByCategory,
   filteredApps,
 } from "../functions/approved/data.js";
 import { IncomingHttpHeaders } from "http";
+import { checkCatExist, fetchCategories } from "../functions/categories/cat.js";
 
 dotenv.config();
 
@@ -56,6 +58,7 @@ type projectInfo = {
   url: string; // The url to the project
   creator: string; // The creator of the project
   twitter: string; // The twitter handle of the project creator
+  category: string; // The category of the project
 };
 
 const validateAPIKey = (req: Request, res: Response, next: NextFunction) => {
@@ -83,8 +86,6 @@ const resLimit = rateLimit({
   legacyHeaders: false,
 });
 
-// app.use();
-
 const requestEntry = (req: Request, res: Response, next: NextFunction) => {
   const { name, description, url, userName }: appDetails = req.body;
   const requiredFields = [name, description, url, userName];
@@ -110,10 +111,25 @@ const validateApprovalEntry = (
   res: Response,
   next: NextFunction
 ) => {
-  const { name, description, url, icon, creator, twitter }: projectInfo =
-    req.body;
+  const {
+    name,
+    description,
+    url,
+    icon,
+    creator,
+    twitter,
+    category,
+  }: projectInfo = req.body;
   const { recordid } = req.headers as CustomHeaders;
-  const requiredFields = [name, description, url, icon, creator, twitter];
+  const requiredFields = [
+    name,
+    description,
+    url,
+    icon,
+    creator,
+    twitter,
+    category,
+  ];
   if (requiredFields.some((field) => !field)) {
     return res.status(400).send({ error: "Missing one or more fields" });
   }
@@ -166,9 +182,7 @@ app.post(
 app.get("/api/request", resLimit, async (_, res: Response) => {
   try {
     const data = await getRequestsData();
-    if (data) {
-      return res.send(data);
-    }
+    if (data) return res.send(data);
   } catch (err: any) {
     console.log(err);
     return res.status(500).send({ error: err.message });
@@ -180,15 +194,23 @@ app.post(
   reqLimit,
   validateApprovalEntry,
   async (req: Request, res: Response) => {
-    const { name, description, url, icon, creator, twitter }: projectInfo =
-      req.body;
+    const {
+      name,
+      description,
+      url,
+      icon,
+      creator,
+      twitter,
+      category,
+    }: projectInfo = req.body;
 
     const { recordid } = req.headers as CustomHeaders;
 
     try {
-      const verf = await checkAprvDuplicate(name);
+      const isApproval = await checkAprvDuplicate(name);
 
-      if (verf) return res.status(409).send({ error: "Duplicate request" });
+      if (isApproval)
+        return res.status(409).send({ error: "Duplicate request" });
 
       const data = await approveRequest(
         recordid,
@@ -197,10 +219,14 @@ app.post(
         url,
         icon,
         creator,
-        twitter
+        twitter,
+        category
       );
 
-      if (data) return res.send({ data });
+      if (data) {
+        await checkCatExist(category);
+        return res.send({ data });
+      }
     } catch (err: any) {
       console.log(err);
       return res.status(500).send({ error: err.message });
@@ -226,33 +252,47 @@ app.delete(
 app.get("/api/apps", resLimit, async (_, res: Response) => {
   try {
     const data = await fetchApprovedApps();
-    if (data) {
-      return res.send(data);
-    }
+    if (data) return res.send(data);
   } catch (err: any) {
     console.log(err);
     return res.status(500).send({ error: err.message });
   }
 });
 
-app.get(
-  "/api/app/:name",
-  // resLimit,
-  validateName,
-  async (req: Request, res: Response) => {
-    const { name } = req.params;
+app.get("/api/app/:name", validateName, async (req: Request, res: Response) => {
+  const { name } = req.params;
 
-    try {
-      const data = await filteredApps(name);
-      if (data) {
-        return res.send(data);
-      }
-    } catch (err: any) {
-      console.log(err);
-      return res.status(500).send({ error: err.message });
-    }
+  try {
+    const data = await filteredApps(name);
+    if (data) return res.send(data);
+  } catch (err: any) {
+    console.log(err);
+    return res.status(500).send({ error: err.message });
   }
-);
+});
+
+app.get("/api/filter/:cat", async (req: Request, res: Response) => {
+  const { cat } = req.params;
+
+  try {
+    const data = await filterAppsByCategory(cat);
+
+    if (data) return res.send(data);
+  } catch (err: any) {
+    console.log(err);
+    return res.status(500).send({ error: err.message });
+  }
+});
+
+app.get("/api/categories", async (_, res: Response) => {
+  try {
+    const data = await fetchCategories();
+    if (data) return res.send(data);
+  } catch (err: any) {
+    console.log(err);
+    return res.status(500).send({ error: err.message });
+  }
+});
 
 app.listen(port, () => {
   console.log(`🟢 [server] Online and listening on port ${port}.`);

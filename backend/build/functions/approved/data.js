@@ -18,7 +18,7 @@ async function checkAprvDuplicate(name) {
         throw new Error(err);
     }
 }
-async function approveRequest(id, appName, description, url, icon, creator, twitterUrl) {
+async function approveRequest(id, appName, description, url, icon, creator, twtUrl, cat) {
     try {
         const createdRecord = await xata.db.approved.create({
             appname: appName,
@@ -26,7 +26,8 @@ async function approveRequest(id, appName, description, url, icon, creator, twit
             url,
             appicon: icon,
             creator,
-            twitterUrl,
+            twitterUrl: twtUrl,
+            category: cat,
         });
         if (!createdRecord)
             throw new Error("Failed to approve request");
@@ -74,5 +75,20 @@ async function filteredApps(name) {
         throw new Error(err);
     }
 }
-export { checkAprvDuplicate, approveRequest, fetchApprovedApps, filteredApps };
+async function filterAppsByCategory(cat) {
+    try {
+        const filtered = await xata.db.approved
+            .filter({
+            category: cat,
+        })
+            .getMany();
+        if (!filtered)
+            throw new Error("No record found");
+        return filtered;
+    }
+    catch (err) {
+        throw new Error(err);
+    }
+}
+export { checkAprvDuplicate, approveRequest, fetchApprovedApps, filteredApps, filterAppsByCategory, };
 //# sourceMappingURL=data.js.map

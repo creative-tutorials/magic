@@ -1,3 +1,5 @@
+import { filteredApps } from "@/types/apps";
+import { apiURL } from "@/types/url-type";
 import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { toast } from "sonner";
@@ -5,7 +7,7 @@ import { toast } from "sonner";
 async function fetchApps(
   setIsFetching: Dispatch<SetStateAction<boolean>>,
   setData: Dispatch<SetStateAction<never[]>>,
-  url: "https://xbrid.vercel.app" | "http://localhost:8080"
+  url: apiURL
 ) {
   setIsFetching(true);
 
@@ -50,7 +52,7 @@ async function createRequest(
     url: string;
     isPending: boolean;
   },
-  url: "https://xbrid.vercel.app" | "http://localhost:8080",
+  url: apiURL,
   user?: { username: string; emailAddresses: { emailAddress: string }[] } | any
 ) {
   if (!isSignedIn) return;
@@ -101,5 +103,99 @@ async function createRequest(
       });
     });
 }
+async function searchApp(
+  value: SetStateAction<string>,
+  setIsFiltering: Dispatch<SetStateAction<boolean>>,
+  filteredData: filteredApps,
+  setFilteredData: Dispatch<SetStateAction<filteredApps>>,
+  url: apiURL
+) {
+  setIsFiltering(true);
+  axios
+    .get(`${url}/api/app/${value}`, {
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_API_KEY,
+      },
+    })
+    .then((data) => {
+      setFilteredData({
+        ...filteredData,
+        appicon: data.data.appicon,
+        appname: data.data.appname,
+        description: data.data.description,
+        url: data.data.url,
+      });
+      setIsFiltering(false);
+    })
+    .catch((err) => {
+      console.error(err.response);
+      setIsFiltering(false);
+      setFilteredData({
+        appicon: "",
+        appname: "",
+        description: "",
+        url: "",
+      });
+    });
+}
 
-export { fetchApps, createRequest };
+async function updateFilter(
+  value: SetStateAction<string>,
+  url: apiURL,
+  setIsFetching: Dispatch<SetStateAction<boolean>>,
+  setData: Dispatch<SetStateAction<never[]>>
+) {
+  setIsFetching(true);
+  axios
+    .get(`${url}/api/filter/${value}`, {
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_API_KEY,
+      },
+    })
+    .then(async (data) => {
+      console.log(data.data);
+      setIsFetching(false);
+      setData(data.data);
+    })
+    .catch(async (err) => {
+      console.error(err.response);
+      const errMsg = err.response.data.error;
+      setData([]);
+      setIsFetching(false);
+    });
+}
+
+async function fetchCategories(
+  setCatData: Dispatch<
+    SetStateAction<{
+      categories: never[];
+      isLoading: boolean;
+    }>
+  >,
+  catData: {
+    categories: never[];
+    isLoading: boolean;
+  },
+  url: apiURL
+) {
+  setCatData({ ...catData, isLoading: true });
+  axios
+    .get(`${url}/api/categories`, {
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_API_KEY,
+      },
+    })
+    .then(async (data) => {
+      console.log(data.data);
+      setCatData({ ...catData, isLoading: false, categories: data.data });
+    })
+    .catch(async (err) => {
+      console.error(err.response);
+      setCatData({ ...catData, isLoading: false, categories: [] });
+    });
+}
+
+export { fetchApps, createRequest, searchApp, updateFilter, fetchCategories };
