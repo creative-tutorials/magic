@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     url: "https://magic.dev",
     siteName: "Magic",
     images: [
-      "https://res.cloudinary.com/derbreilm/image/upload/v1706286428/og_-_image_v2_ne6n7p.png",
+      "https://res.cloudinary.com/derbreilm/image/upload/v1706641685/og_-_image_v3_r6f2vi.png",
     ],
   },
 };

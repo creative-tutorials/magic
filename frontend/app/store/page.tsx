@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useAPIURL } from "@/hooks/get-url";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { fetchApps, updateFilter, fetchCategories } from "@/functions/actions";
